@@ -1,7 +1,9 @@
 package it.unibo.oop.lab.lambda;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -13,6 +15,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static java.util.Collections.addAll;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 
@@ -64,7 +67,36 @@ public final class LambdaUtilities {
         /*
          * Suggestion: consider Optional.filter
          */
-        return emptyList();
+
+        List<Optional<T>> listRes = new ArrayList<>();
+        
+        // Predicate<T> pred = new Predicate<T>() {
+        //     @Override
+        //     public boolean test(T t) {
+        //         if(t == null) return false;
+        //         return (Integer)t > 10;
+        //     }            
+        // };
+
+        //Predicate<T> pred = t -> (Integer)t > 10;
+        
+        // for (T i : list) {
+        //     Optional<T> opt = Optional.ofNullable(i);
+
+        //     Optional<T> filteredOpt = opt.filter(pred);
+            
+        //     if(filteredOpt.isPresent()) {
+        //         listRes.add(filteredOpt);
+        //     }
+        // }
+        try {
+            listRes = list.stream().map(n -> Optional.of(n).filter(pre)).collect(Collectors.toList());
+        } catch (final NullPointerException e) {
+            System.out.println("Error, the value in the map has been found null: \n" + e);
+        }
+
+        return listRes;
+
     }
 
     /**
@@ -83,7 +115,17 @@ public final class LambdaUtilities {
         /*
          * Suggestion: consider Map.merge
          */
-        return emptyMap();
+
+        Map<R, Set<T>> result = new HashMap<>();       
+        
+        list.forEach(n -> {
+            result.merge(op.apply(n), new HashSet<>(List.of(n)), (oldSet, newSet) -> {            
+                oldSet.addAll(newSet);       
+                return oldSet;               
+            });         
+        });
+
+        return result;
     }
 
     /**
@@ -104,7 +146,14 @@ public final class LambdaUtilities {
          *
          * Keep in mind that a map can be iterated through its forEach method
          */
-        return emptyMap();
+
+        Map<K, V> mapResult = new HashMap<>();
+
+        map.forEach( (k, opV) -> {
+            mapResult.put(k, opV.orElse(def.get()));  
+        });
+        
+        return mapResult;
     }
 
     /**
