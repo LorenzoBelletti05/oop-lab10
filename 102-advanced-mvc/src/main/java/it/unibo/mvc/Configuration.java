@@ -1,5 +1,10 @@
 package it.unibo.mvc;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.StringTokenizer;
 
 /**
  * Encapsulates the concept of configuration.
@@ -63,14 +68,56 @@ public final class Configuration {
      */
     public static class Builder {
 
-        private static final int MIN = 0;
-        private static final int MAX = 100;
-        private static final int ATTEMPTS = 10;
-
-        private int min = MIN;
-        private int max = MAX;
-        private int attempts = ATTEMPTS;
+        private String pathConfig = "src/main/resources/config.yml";
+        private String defaultConfiguration = System.getProperty("user.home") + File.separator + pathConfig;
+       
+        private int min;
+        private int max;
+        private int attempts;
         private boolean consumed = false;
+        private boolean jump = true;
+        private int count = 0;
+        private String dataRead;
+
+        public Builder() {
+            try {
+            readData();
+            }catch(IOException e) {
+                System.out.println("Error: invalid input read while reading the file configuration: " + e); //NOPMD used for debug
+            }
+        }
+
+
+        private void readData() throws IOException {
+
+            
+            try(final BufferedReader w = new BufferedReader(new FileReader(defaultConfiguration))) {
+                
+                StringTokenizer st = new StringTokenizer(w.readLine(), ":"); 
+                while(st.hasMoreTokens()) {                
+                    dataRead = st.nextToken().trim();
+                    try {
+                        Integer.parseInt(dataRead);
+                    }catch(Exception e) {
+                        if(!jump) {
+                            switch (count) {
+                                case 0:
+                                    min = Integer.parseInt(dataRead);                                    
+                                case 1:
+                                    max = Integer.parseInt(dataRead);                                    
+                                case 2:
+                                    attempts = Integer.parseInt(dataRead);                                    
+                            }
+                            jump = true;
+                            count++;
+                        }
+                        jump = false;                        
+                    }
+                }
+            }   
+            
+            
+        }
 
         /**
          * @param min the minimum value
