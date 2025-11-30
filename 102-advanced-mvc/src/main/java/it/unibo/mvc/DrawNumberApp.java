@@ -4,12 +4,7 @@ import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- */
-public final class DrawNumberApp implements DrawNumberViewObserver {
-    private static final int MIN = 0;
-    private static final int MAX = 100;
-    private static final int ATTEMPTS = 10;
+public final class DrawNumberApp implements DrawNumberViewObserver {   
 
     private final DrawNumber model;
     private final List<DrawNumberView> views;
@@ -19,6 +14,9 @@ public final class DrawNumberApp implements DrawNumberViewObserver {
      *            the views to attach
      */
     public DrawNumberApp(final DrawNumberView... views) {
+
+        Configuration conf = new Configuration.Builder().build();
+        
         /*
          * Side-effect proof
          */
@@ -27,7 +25,7 @@ public final class DrawNumberApp implements DrawNumberViewObserver {
             view.setObserver(this);
             view.start();
         }
-        this.model = new DrawNumberImpl(MIN, MAX, ATTEMPTS);
+        this.model = new DrawNumberImpl(conf.getMin(), conf.getMax(), conf.getAttempts());
     }
 
     @Override
@@ -66,7 +64,18 @@ public final class DrawNumberApp implements DrawNumberViewObserver {
      * @throws FileNotFoundException 
      */
     public static void main(final String... args) throws FileNotFoundException {
-        new DrawNumberApp(new DrawNumberViewImpl());
+        DrawNumberView graphicalView1 = new DrawNumberViewImpl(); // La tua view Swing esistente
+        DrawNumberView graphicalView2 = new DrawNumberViewImpl(); // La seconda view Swing
+        DrawNumberView fileLogger = new PrintStreamView("output.log");
+        // 3. Crea la View su Console (Standard Output) usando la tua PrintStreamView
+        DrawNumberView consoleView = new PrintStreamView(System.out);
+
+        new DrawNumberApp(
+        graphicalView1, 
+        graphicalView2, 
+        fileLogger, 
+        consoleView
+    );
     }
 
 }

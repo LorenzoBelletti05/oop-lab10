@@ -68,57 +68,50 @@ public final class Configuration {
      */
     public static class Builder {
 
-        private String pathConfig = "src/main/resources/config.yml";
-        private String defaultConfiguration = System.getProperty("user.home") + File.separator + pathConfig;
+        // private String pathConfig = "src/main/resources/config.yml";
+        private String defaultConfiguration = System.getProperty("user.dir") 
+                                                + File.separator
+                                                + "src" + File.separator 
+                                                + "main" + File.separator 
+                                                + "resources" + File.separator 
+                                                + "config.yml";
        
         private int min;
         private int max;
         private int attempts;
         private boolean consumed = false;
-        private boolean jump = true;
-        private int count = 0;
-        private String dataRead;
-
-        public Builder() {
-            try {
-            readData();
-            }catch(IOException e) {
-                System.out.println("Error: invalid input read while reading the file configuration: " + e); //NOPMD used for debug
-            }
-        }
-
 
         private void readData() throws IOException {
-
             
+            System.out.println("Sto cercando il file qui: " + defaultConfiguration); //NOPMD used for debug
             try(final BufferedReader w = new BufferedReader(new FileReader(defaultConfiguration))) {
-                
-                StringTokenizer st = new StringTokenizer(w.readLine(), ":"); 
-                while(st.hasMoreTokens()) {                
-                    dataRead = st.nextToken().trim();
-                    try {
-                        Integer.parseInt(dataRead);
-                    }catch(Exception e) {
-                        if(!jump) {
-                            switch (count) {
-                                case 0:
-                                    min = Integer.parseInt(dataRead);                                    
-                                case 1:
-                                    max = Integer.parseInt(dataRead);                                    
-                                case 2:
-                                    attempts = Integer.parseInt(dataRead);                                    
-                            }
-                            jump = true;
-                            count++;
-                        }
-                        jump = false;                        
-                    }
-                }
-            }   
-            
-            
-        }
+                                 
+                String line;
+                while((line = w.readLine()) != null) {
+                   StringTokenizer st = new StringTokenizer(line, ":"); 
 
+                    if (st.countTokens() == 2) {
+                        String key = st.nextToken().trim();   
+                        String valueStr = st.nextToken().trim(); 
+
+                        try {
+                            int value = Integer.parseInt(valueStr);
+                            
+                            if (key.equals("minimum")) {
+                                this.min = value;
+                            } else if (key.equals("maximum")) {
+                                this.max = value;
+                            } else if (key.equals("attempts")) {
+                                this.attempts = value;
+                            }
+                        } catch (NumberFormatException e) {
+                            //Se il valore non è un numero, ignoriamo
+                        }
+                    }
+                }  
+            }
+        }
+    
         /**
          * @param min the minimum value
          * @return this builder, for method chaining
@@ -150,6 +143,12 @@ public final class Configuration {
          * @return a configuration
          */
         public final Configuration build() {
+            try {
+                readData();
+            }catch(IOException e) {
+                System.out.println("Error: invalid input read while reading the file configuration: " + e); //NOPMD used for debug
+            }
+
             if (consumed) {
                 throw new IllegalStateException("The builder can only be used once");
             }

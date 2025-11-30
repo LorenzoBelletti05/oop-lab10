@@ -13,7 +13,7 @@ import java.io.PrintStream;
  */
 public final class PrintStreamView implements DrawNumberView {
 
-    private final PrintStream out;
+    private final PrintStream out;    
 
     /**
      * Builds a new PrintStreamView.
@@ -60,8 +60,7 @@ public final class PrintStreamView implements DrawNumberView {
 
     @Override
     public void displayError(String message) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'displayError'");
+        out.println(message);
     }
 
 }
